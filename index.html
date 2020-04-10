@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>COVID-19</title>
+	<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+	<div id="pro">
+		<h1>Total de contagiados hoy: {{ mensaje }}</h1>
+		<h1>Total de contagiados en treinta días más (ceteris paribus): {{ treinta }}</h1>
+	</div>
+	<div id="dataviz"></div>
+
+	<script src="d3.min.js"></script>
+	<script src="vue.js"></script>
+	<script src="grafica.js"></script>
+</body>
+</html>
