@@ -7,13 +7,13 @@ recuperados = input("Ingrese el total de recuperados\n").strip()
 hoy = date.today().isoformat()
 
 ## PARA DATOS LITE
-with open("testlite.csv" , "a", newline='') as f:
+with open("datoslite.csv" , "a", newline='') as f:
     a = csv.writer(f, delimiter=",")
     a.writerow([hoy, contagiados, recuperados, muertos])
 
 
 ## PARA DATOS COMPLETOS
-with open("test.csv", "r") as f:
+with open("datos.csv", "r") as f:
     _, aindice, acontagiados, _, _, _, aretirados, _, _ = f.readlines()[-1].split(",")
 
 #NUEVOS = CONTAGIADOS DE HOY - CONTAGIADOS DE AYER
@@ -29,9 +29,9 @@ retirados_al_dia = str(int(retirados) - int(aretirados))
 infectados = str(int(contagiados) - int(retirados))
 
 #INDICE
-indice = aindice + 1;
+indice = str(int(aindice) + 1);
 
-with open("test.csv", "a") as f:
+with open("datos.csv", "a", newline="") as f:
     a = csv.writer(f, delimiter=",")
     a.writerow([hoy, indice, contagiados, nuevos, recuperados, muertos, retirados, retirados_al_dia, infectados])
 

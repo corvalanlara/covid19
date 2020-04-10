@@ -73,6 +73,11 @@ var app = new Vue({
 	data: {
 		mensaje: 0,
 		treinta: 0,
+		cuarentena: 0,
+		sri_treinta: 0,
+		sri_cuarentena: 0,
+		sri: 0,
+		exponencial: 0,
 	},
 	created() {
 		let este = this;
@@ -82,6 +87,8 @@ var app = new Vue({
 					fecha: d3.timeParse("%Y-%m-%d")(d.fecha), 
 					total: Number(d.contagiados_a),
 					indice: Number(d.indice),
+					retirados: Number(d.retirados_a),
+					infectados: Number(d.infectados_v),
 				};
 			}
 		);
@@ -93,8 +100,21 @@ var app = new Vue({
 			var indices = ultimos.map((a) => a.indice);
 			var contagiados = ultimos.map((a) => a.total);
 			var pend = pendiente(indices, contagiados);
-			este.treinta = Math.round(contagiados_hoy * pend**30);
+			var c = 10**pend;
+			este.treinta = Math.round(contagiados_hoy * c**30);
+			este.exponencial = Math.round(contagiados_hoy * c);
 			este.mensaje = contagiados_hoy;
+			var k = c - 1;
+			var mitad_k = k / 2;
+			var nuevo_c = mitad_k + 1;
+			este.cuarentena = Math.round(contagiados_hoy * nuevo_c ** 30);
+			este.sri = sri(da, k).contagiados;
+			var lvirtual = add_virtual_dates(da, k, 30);
+			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados;
+			var vcuarentena = add_virtual_dates(da, mitad_k, 30);
+			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
+			console.log(vcuarentena);
+			console.log(lvirtual);
 		});
 	}
 });
@@ -113,5 +133,32 @@ function pendiente(dias, contagiados) {
 
 	m = numer / denom;
 
-	return 10**m;
+	return m;
+}
+
+function sri(data, k) {
+	const totalpais = 19107216;
+	const d = 14;
+	var data_hoy = data[data.length - 1];
+	var r = data_hoy.retirados;
+	var i = data_hoy.infectados;
+	var sanos = totalpais - i - r;
+	var rd = data[data.length - d].retirados;
+	var rd_1 = data[data.length - d + 1].retirados;
+	var r_proy = r + rd - rd_1;
+	var i_proy = i + ((k * sanos) / totalpais) * i - (r_proy - r);
+	var contagiados_proy = r_proy + i_proy;
+	return { 
+		contagiados: Math.round(contagiados_proy),
+		infectados: Math.round(i_proy),
+		retirados: Math.round(r_proy),
+	};	
+}
+
+function add_virtual_dates(da, k, num) {
+	var virtual = [...da];
+	for(var i = 0; i < num; i++) {
+		virtual.push(sri(virtual, k));
+	};
+	return virtual;
 }
