@@ -1,3 +1,7 @@
+
+const totalpais = 19107216;
+const d = 14;
+
 var svgWidth = 600;
 var svgHeight = 480;
 var margin = {top: 20, right: 20, bottom: 30, left: 50};
@@ -18,15 +22,15 @@ function draw(data) {
 		.range([0, width]);
 
 	var y = d3.scaleLinear()
-		.domain([0, d3.max(data, function(d) { return +d.contagiados; })])
+		.domain([0, d3.max(data, function(d) { return d.infectados; })])
 		.range([height, 0]);
 
 	var line = d3.line()
 		.x(function(d) {
-			return x(d.fecha)
+			return x(d.fecha);
 		})
 		.y(function(d) {
-			return y(d.contagiados)
+			return y(d.infectados);
 		});
 
 	svg.append("g")
@@ -41,7 +45,7 @@ function draw(data) {
 		.attr("y", 6)
 		.attr("dy", "0.71em")
 		.attr("text-anchor", "end")
-		.text("Total de contagiados");
+		.text("Total de infectados");
 
 	var tooltip = d3.select("#dataviz")
 		.append("div")
@@ -58,10 +62,10 @@ function draw(data) {
 		.enter().append("circle")
 		.attr("r", 5)
 		.attr("cx", function(d) { return x(d.fecha); })
-		.attr("cy", function(d) { return y(d.contagiados); })
+		.attr("cy", function(d) { return y(d.infectados); })
 		.on("mouseover", function(c) {
 			tooltip.style("opacity", 1)
-				.html(c.contagiados + " contagiados al día " + c.fecha.toLocaleDateString());
+				.html(c.infectados + " infectados al día " + c.fecha.toLocaleDateString());
 			svg.select('[cx="'+ x(c.fecha) + '"]')
 				.style("fill", "red");
 		})
@@ -110,7 +114,6 @@ var app = new Vue({
 		);
 
 		csv.then(function(da) {
-			draw(da);
 			contagiados_hoy = da[da.length - 1].contagiados;
 			este.mensaje = contagiados_hoy;
 
@@ -125,13 +128,14 @@ var app = new Vue({
 
 			//Método SRI
 			este.sri = sri(da, k).contagiados;
-			var lvirtual = add_virtual_dates(da, 30, false);
+			var lvirtual = add_virtual_dates(da, 120, false);
 			console.log(lvirtual);
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados;
-			var vcuarentena = add_virtual_dates(da, 30, true);
+			var vcuarentena = add_virtual_dates(da, 120, true);
 			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
 
-			//draw(lvirtual);
+			draw(lvirtual);
+			draw(vcuarentena);
 		});
 	}
 });
@@ -154,8 +158,6 @@ function pendiente(dias, contagiados) {
 }
 
 function sri(data, k) {
-	const totalpais = 19107216;
-	const d = 14;
 	var data_hoy = data[data.length - 1];
 	var indice = data_hoy.indice;
 	var fecha = data_hoy.fecha;
@@ -165,7 +167,7 @@ function sri(data, k) {
 	var i = data_hoy.infectados;
 	var sanos = totalpais - i - r;
 	var rd = data[data.length - d].retirados;
-	var rd_1 = data[data.length - d + 1].retirados;
+	var rd_1 = data[data.length - d - 1].retirados;
 	var r_proy = r + rd - rd_1;
 	var i_proy = i + ((k * sanos) / totalpais) * i - (r_proy - r);
 	var contagiados_proy = r_proy + i_proy;
@@ -180,19 +182,12 @@ function sri(data, k) {
 
 function add_virtual_dates(da, num, quarantine) {
 	var virtual = [...da];
-	if (quarantine) {
-		var k = get_k(virtual) / 3;
-	        for(var i = 0; i < num; i++) {
-                        virtual.push(sri(virtual, k));
-                };
-                return virtual;
-	} else {
-		for(var i = 0; i < num; i++) {
-			var k = get_k(virtual);
-			virtual.push(sri(virtual, k));
-		};
-		return virtual;
-	}
+	for(var i = 0; i < num; i++) {
+		var k = quarantine ? get_k(virtual) : (get_k(virtual) / 3);
+		virtual.push(sri(virtual, k));
+	};
+	var masdatos = get_infectados_al_dia(virtual);
+        return masdatos;
 }
 
 function get_k(data) {
@@ -203,4 +198,15 @@ function get_k(data) {
         var c = 10**pend;
         var k = c - 1;
 	return k;
+}
+
+function get_infectados_al_dia(data) {
+	var lista = [...data];
+	lista[0].infectados_dia = 0;
+	for(var i = 1; i < lista.length; i++) {
+		var infectados_hoy = lista[i].infectados;
+		var infectados_ayer = lista[i - 1].infectados;
+		lista[i].infectados_dia = infectados_hoy - infectados_ayer;
+	}
+	return lista;
 }
