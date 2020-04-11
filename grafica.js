@@ -43,17 +43,33 @@ function draw(data) {
 		.attr("text-anchor", "end")
 		.text("Total de contagiados");
 
+	var tooltip = d3.select("#dataviz")
+		.append("div")
+		.style("opacity", 0)
+		.attr("class", "tooltip")
+		.style("background-color", "white")
+		.style("border", "solid")
+		.style("border-width", "1px")
+		.style("border-radius", "5px")
+		.style("padding", "10px")
+
 	svg.selectAll("dot")
 		.data(data)
 		.enter().append("circle")
-		.attr("r", 3.5)
+		.attr("r", 5)
 		.attr("cx", function(d) { return x(d.fecha); })
 		.attr("cy", function(d) { return y(d.contagiados); })
 		.on("mouseover", function(c) {
+			console.log(c.fecha);
+			tooltip.style("opacity", 1)
+				.html(c.contagiados + " contagiados al día " + c.fecha.toLocaleDateString());
 			svg.select('[cx="'+ x(c.fecha) + '"]')
 				.style("fill", "red");
 		})
 		.on("mouseout", function(c) {
+			tooltip.transition()
+				.duration(200)
+				.style("opacity", 0);
 			svg.select('[cx="'+ x(c.fecha) + '"]')
 				.style("fill", "black");
 		});
@@ -66,6 +82,7 @@ function draw(data) {
 		.attr("stroke-linecap", "round")
 		.attr("stroke-width", 1.5)
 		.attr("d", line);
+
 }
 
 var app = new Vue({
@@ -96,14 +113,18 @@ var app = new Vue({
 		csv.then(function(da) {
 			draw(da);
 			contagiados_hoy = da[da.length - 1].contagiados;
+			este.mensaje = contagiados_hoy;
+
+			//Método exponencial
 			var k = get_k(da);
 			var c = k + 1;
 			este.treinta = Math.round(contagiados_hoy * c**30);
 			este.exponencial = Math.round(contagiados_hoy * c);
-			este.mensaje = contagiados_hoy;
 			var nuevo_k = k / 3;
 			var nuevo_c = nuevo_k + 1;
 			este.cuarentena = Math.round(contagiados_hoy * nuevo_c ** 30);
+
+			//Método SRI
 			este.sri = sri(da, k).contagiados;
 			var lvirtual = add_virtual_dates(da, 30, false);
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados;
