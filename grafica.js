@@ -1,12 +1,12 @@
 var svgWidth = 600;
-var svgHeight = 400;
+var svgHeight = 480;
 var margin = {top: 20, right: 20, bottom: 30, left: 50};
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
 var svg = d3.select("#dataviz")
 		.append("svg")
-		.attr("width", svgWidth)
-		.attr("height", svgHeight)
+  		.attr("preserveAspectRatio", "xMinYMin meet")
+  		.attr("viewBox", "0 0 600 480")
 		.append("g")
 		.attr("transform", 
 			"translate(" + margin.left + "," + margin.top + ")" );

@@ -3,19 +3,37 @@
 <head>
 	<meta charset="UTF-8">
 	<title>COVID-19</title>
-	<link rel="stylesheet" href="estilo.css">
+	<link rel="stylesheet" href="bulma.css">
 </head>
 <body>
-	<div id="pro">
-		<h1>Total de contagiados hoy: {{ mensaje }}</h1>
-		<h1>Total de contagiados en treinta días más (ceteris paribus): {{ treinta }}</h1>
-		<h1>Total de contagiados en treinta días más si se aplica cuarentena: {{ cuarentena }}</h1>
-		<h1>Total de contagiados en treinta días más (ceteris paribus) usando SRI: {{ sri_treinta }}</h1>
-		<h1>Total de contagiados en treinta días más si se aplica cuarentena usando SRI: {{ sri_cuarentena }}</h1>
-		<h1>Total de contagiados mañana usando SRI: {{ sri }}</h1>
-		<h1>Total de contagiados mañana usando el método exponencial: {{ exponencial }}</h1>
+	<div class="section">
+		<div class="container">
+			<div class="tile is-ancestor is-vertical">
+				<div class="tile is-parent">
+					<div class="tile is-child  box">
+						<div id="pro">
+							<h1>Total de contagiados hoy: {{ mensaje }}</h1>
+							<h1>Total de contagiados en treinta días más (ceteris paribus): {{ treinta }}</h1>
+							<h1>Total de contagiados en treinta días más si se aplica cuarentena: {{ cuarentena }}</h1>
+							<h1>Total de contagiados en treinta días más (ceteris paribus) usando SRI: {{ sri_treinta }}</h1>
+							<h1>Total de contagiados en treinta días más si se aplica cuarentena usando SRI: {{ sri_cuarentena }}</h1>
+							<h1>Total de contagiados mañana usando SRI: {{ sri }}</h1>
+							<h1>Total de contagiados mañana usando el método exponencial: {{ exponencial }}</h1>
+						</div>
+					</div>
+				</div>
+				<div class="tile is-parent">
+					<div class="tile is-child">
+						<figure class="image" id="dataviz">
+						</figure>
+					</div>
+					<div class="tile is-child box">
+						<p>Texto</p>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-	<div id="dataviz"></div>
 
 	<script src="d3.min.js"></script>
 	<script src="vue.js"></script>
