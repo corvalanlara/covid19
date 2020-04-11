@@ -18,7 +18,7 @@ function draw(data) {
 		.range([0, width]);
 
 	var y = d3.scaleLinear()
-		.domain([0, d3.max(data, function(d) { return +d.total; })])
+		.domain([0, d3.max(data, function(d) { return +d.contagiados; })])
 		.range([height, 0]);
 
 	var line = d3.line()
@@ -26,7 +26,7 @@ function draw(data) {
 			return x(d.fecha)
 		})
 		.y(function(d) {
-			return y(d.total)
+			return y(d.contagiados)
 		});
 
 	svg.append("g")
@@ -48,7 +48,7 @@ function draw(data) {
 		.enter().append("circle")
 		.attr("r", 3.5)
 		.attr("cx", function(d) { return x(d.fecha); })
-		.attr("cy", function(d) { return y(d.total); })
+		.attr("cy", function(d) { return y(d.contagiados); })
 		.on("mouseover", function(c) {
 			svg.select('[cx="'+ x(c.fecha) + '"]')
 				.style("fill", "red");
@@ -85,7 +85,7 @@ var app = new Vue({
 			function(d) {
 				return { 
 					fecha: d3.timeParse("%Y-%m-%d")(d.fecha), 
-					total: Number(d.contagiados_a),
+					contagiados: Number(d.contagiados_a),
 					indice: Number(d.indice),
 					retirados: Number(d.retirados_a),
 					infectados: Number(d.infectados_v),
@@ -95,26 +95,20 @@ var app = new Vue({
 
 		csv.then(function(da) {
 			draw(da);
-			contagiados_hoy = da[da.length - 1].total;
-			var ultimos = da.slice(-7);
-			var indices = ultimos.map((a) => a.indice);
-			var contagiados = ultimos.map((a) => a.total);
-			var pend = pendiente(indices, contagiados);
-			var c = 10**pend;
+			contagiados_hoy = da[da.length - 1].contagiados;
+			var k = get_k(da);
+			var c = k + 1;
 			este.treinta = Math.round(contagiados_hoy * c**30);
 			este.exponencial = Math.round(contagiados_hoy * c);
 			este.mensaje = contagiados_hoy;
-			var k = c - 1;
-			var mitad_k = k / 2;
-			var nuevo_c = mitad_k + 1;
+			var nuevo_k = k / 3;
+			var nuevo_c = nuevo_k + 1;
 			este.cuarentena = Math.round(contagiados_hoy * nuevo_c ** 30);
 			este.sri = sri(da, k).contagiados;
-			var lvirtual = add_virtual_dates(da, k, 30);
+			var lvirtual = add_virtual_dates(da, 30, false);
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados;
-			var vcuarentena = add_virtual_dates(da, mitad_k, 30);
+			var vcuarentena = add_virtual_dates(da, 30, true);
 			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
-			console.log(vcuarentena);
-			console.log(lvirtual);
 		});
 	}
 });
@@ -140,6 +134,7 @@ function sri(data, k) {
 	const totalpais = 19107216;
 	const d = 14;
 	var data_hoy = data[data.length - 1];
+	var indice = data_hoy.indice
 	var r = data_hoy.retirados;
 	var i = data_hoy.infectados;
 	var sanos = totalpais - i - r;
@@ -149,16 +144,36 @@ function sri(data, k) {
 	var i_proy = i + ((k * sanos) / totalpais) * i - (r_proy - r);
 	var contagiados_proy = r_proy + i_proy;
 	return { 
+		indice: indice + 1,
 		contagiados: Math.round(contagiados_proy),
 		infectados: Math.round(i_proy),
 		retirados: Math.round(r_proy),
 	};	
 }
 
-function add_virtual_dates(da, k, num) {
+function add_virtual_dates(da, num, quarantine) {
 	var virtual = [...da];
-	for(var i = 0; i < num; i++) {
-		virtual.push(sri(virtual, k));
-	};
-	return virtual;
+	if (quarantine) {
+		var k = get_k(virtual) / 3;
+	        for(var i = 0; i < num; i++) {
+                        virtual.push(sri(virtual, k));
+                };
+                return virtual;
+	} else {
+		for(var i = 0; i < num; i++) {
+			var k = get_k(virtual);
+			virtual.push(sri(virtual, k));
+		};
+		return virtual;
+	}
+}
+
+function get_k(data) {
+	var ultimos = data.slice(-7);
+        var indices = ultimos.map((a) => a.indice);
+        var contagiados = ultimos.map((a) => a.contagiados);
+        var pend = pendiente(indices, contagiados);
+        var c = 10**pend;
+        var k = c - 1;
+	return k;
 }
