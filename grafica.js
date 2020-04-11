@@ -60,7 +60,6 @@ function draw(data) {
 		.attr("cx", function(d) { return x(d.fecha); })
 		.attr("cy", function(d) { return y(d.contagiados); })
 		.on("mouseover", function(c) {
-			console.log(c.fecha);
 			tooltip.style("opacity", 1)
 				.html(c.contagiados + " contagiados al día " + c.fecha.toLocaleDateString());
 			svg.select('[cx="'+ x(c.fecha) + '"]')
@@ -127,9 +126,12 @@ var app = new Vue({
 			//Método SRI
 			este.sri = sri(da, k).contagiados;
 			var lvirtual = add_virtual_dates(da, 30, false);
+			console.log(lvirtual);
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados;
 			var vcuarentena = add_virtual_dates(da, 30, true);
 			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
+
+			//draw(lvirtual);
 		});
 	}
 });
@@ -155,7 +157,10 @@ function sri(data, k) {
 	const totalpais = 19107216;
 	const d = 14;
 	var data_hoy = data[data.length - 1];
-	var indice = data_hoy.indice
+	var indice = data_hoy.indice;
+	var fecha = data_hoy.fecha;
+	var nueva_fecha = new Date(fecha);
+	nueva_fecha.setDate(fecha.getDate() + 1);
 	var r = data_hoy.retirados;
 	var i = data_hoy.infectados;
 	var sanos = totalpais - i - r;
@@ -169,6 +174,7 @@ function sri(data, k) {
 		contagiados: Math.round(contagiados_proy),
 		infectados: Math.round(i_proy),
 		retirados: Math.round(r_proy),
+		fecha: nueva_fecha,
 	};	
 }
 
