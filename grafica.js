@@ -17,15 +17,27 @@ var svg = d3.select("#dataviz")
 
 
 function draw(data) {
+	console.log(data);
 	var x = d3.scaleTime()
-		.domain(d3.extent(data, function(d) { return d.fecha; }))
+		.domain(d3.extent(data[0], function(d) { return d.fecha; }))
 		.range([0, width]);
+	
+	var max_y1 = d3.max(data[0], function(d) { return d.infectados; });
+	var max_y2 = d3.max(data[1], function(d) { return d.infectados; });
 
 	var y = d3.scaleLinear()
-		.domain([0, d3.max(data, function(d) { return d.infectados; })])
+		.domain([0, max_y1 > max_y2 ? max_y1 : max_y2])
 		.range([height, 0]);
 
 	var line = d3.line()
+		.x(function(d) {
+			return x(d.fecha);
+		})
+		.y(function(d) {
+			return y(d.infectados);
+		});
+
+	var line2 = d3.line()
 		.x(function(d) {
 			return x(d.fecha);
 		})
@@ -47,6 +59,7 @@ function draw(data) {
 		.attr("text-anchor", "end")
 		.text("Total de infectados");
 
+
 	var tooltip = d3.select("#dataviz")
 		.append("div")
 		.style("opacity", 0)
@@ -57,8 +70,9 @@ function draw(data) {
 		.style("border-radius", "5px")
 		.style("padding", "10px")
 
+	//DATOS SIN CUARENTENA
 	svg.selectAll("dot")
-		.data(data)
+		.data(data[0])
 		.enter().append("circle")
 		.attr("r", 5)
 		.attr("cx", function(d) { return x(d.fecha); })
@@ -78,13 +92,43 @@ function draw(data) {
 		});
 
 	svg.append("path")
-		.datum(data)
+		.datum(data[0])
 		.attr("fill", "none")
 		.attr("stroke", "steelblue")
 		.attr("stroke-linejoin", "round")
 		.attr("stroke-linecap", "round")
 		.attr("stroke-width", 1.5)
 		.attr("d", line);
+
+	// DATOS CUARENTENA
+	svg.selectAll("dot")
+		.data(data[1])
+		.enter().append("circle")
+		.attr("r", 5)
+		.attr("cx", function(d) { return x(d.fecha); })
+		.attr("cy", function(d) { return y(d.infectados); })
+		.on("mouseover", function(c) {
+			tooltip.style("opacity", 1)
+				.html(c.infectados + " infectados al día " + c.fecha.toLocaleDateString());
+			svg.select('[cx="'+ x(c.fecha) + 'a"]')
+				.style("fill", "red");
+		})
+		.on("mouseout", function(c) {
+			tooltip.transition()
+				.duration(200)
+				.style("opacity", 0);
+			svg.select('[cx="'+ x(c.fecha) + 'a"]')
+				.style("fill", "black");
+		});
+
+	svg.append("path")
+		.datum(data[1])
+		.attr("fill", "none")
+		.attr("stroke", "red")
+		.attr("stroke-linejoin", "round")
+		.attr("stroke-linecap", "round")
+		.attr("stroke-width", 1.5)
+		.attr("d", line2);
 
 }
 
@@ -128,14 +172,15 @@ var app = new Vue({
 
 			//Método SRI
 			este.sri = sri(da, k).contagiados;
-			var lvirtual = add_virtual_dates(da, 120, false);
-			console.log(lvirtual);
+			var lvirtual = add_virtual_dates(da, 30, false);
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados;
-			var vcuarentena = add_virtual_dates(da, 120, true);
+			var vcuarentena = add_virtual_dates(da, 30, true);
 			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
 
-			draw(lvirtual);
-			draw(vcuarentena);
+			var lvirtual120 = add_virtual_dates(da, 120, false);
+			var vcuarentena120 = add_virtual_dates(da, 120, true);
+			
+			draw([lvirtual120, vcuarentena120]);
 		});
 	}
 });
@@ -183,7 +228,7 @@ function sri(data, k) {
 function add_virtual_dates(da, num, quarantine) {
 	var virtual = [...da];
 	for(var i = 0; i < num; i++) {
-		var k = quarantine ? get_k(virtual) : (get_k(virtual) / 3);
+		var k = quarantine ? (get_k(virtual) / 3) : get_k(virtual);
 		virtual.push(sri(virtual, k));
 	};
 	var masdatos = get_infectados_al_dia(virtual);
