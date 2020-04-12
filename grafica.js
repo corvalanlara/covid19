@@ -154,11 +154,11 @@ var app = new Vue({
 		csv.then(function(da) {
 			//Método SRI
 			var lvirtual = add_virtual_dates(da, 30, false);
-			este.sri_treinta = d3.max(lvirtual, function(d) { return d.infectados; });
+			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados; 
 			var vcuarentena = add_virtual_dates(da, 30, true);
-			este.sri_cuarentena = d3.max(vcuarentena, function(d) { return d.infectados; });
+			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
 
-			draw([lvirtual, vcuarentena], "infectados");
+			draw([lvirtual, vcuarentena], "contagiados");
 		});
 	}
 });
@@ -205,8 +205,8 @@ function sri(data, k) {
 
 function add_virtual_dates(da, num, quarantine) {
 	var virtual = [...da];
+	var k = quarantine ? (get_k(da) / 3) : get_k(da);
 	for(var i = 0; i < num; i++) {
-		var k = quarantine ? (get_k(virtual) / 3) : get_k(virtual);
 		virtual.push(sri(virtual, k));
 	};
         return virtual;
