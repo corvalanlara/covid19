@@ -1,6 +1,7 @@
 
 const totalpais = 19107216;
 const d = 14;
+const bus = new Vue();
 
 var svgWidth = 600;
 var svgHeight = 480;
@@ -136,6 +137,7 @@ var app = new Vue({
 	data: {
 		sri_treinta: 0,
 		sri_cuarentena: 0,
+		fecha_pronostico: "",
 	},
 	created() {
 		let este = this;
@@ -158,9 +160,29 @@ var app = new Vue({
 			var vcuarentena = add_virtual_dates(da, 30, true);
 			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
 
+			//Fechas
+			este.sendData(da[da.length - 1].fecha.toLocaleDateString());
+			este.fecha_pronostico = lvirtual[lvirtual.length - 1].fecha.toLocaleDateString();
+			
+			//Gráfico
 			draw([lvirtual, vcuarentena], "contagiados");
 		});
+	},
+	methods: {
+    		sendData(fecha){
+      			bus.$emit('fecha', fecha)
+    		}
 	}
+});
+
+var pri = new Vue({
+	el: "#pri",
+	data: {
+		fecha_pronostico: "",
+	},
+	mounted() {
+    		bus.$on("fecha", fecha => this.fecha_pronostico = fecha);
+  	}
 });
 
 // METODO DE MÍNIMOS CUADRADOS
