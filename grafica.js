@@ -161,8 +161,9 @@ var app = new Vue({
 			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
 
 			//Fechas
-			este.sendData(da[da.length - 1].fecha.toLocaleDateString());
-			este.fecha_pronostico = lvirtual[lvirtual.length - 1].fecha.toLocaleDateString();
+			const formato = {year: 'numeric', month: 'long', day: 'numeric'};
+			este.sendData(da[da.length - 1].fecha.toLocaleDateString('es-CL', formato));
+			este.fecha_pronostico = lvirtual[lvirtual.length - 1].fecha.toLocaleDateString('es-CL', formato);
 			
 			//Gráfico
 			draw([lvirtual, vcuarentena], "contagiados");
