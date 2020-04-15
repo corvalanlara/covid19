@@ -2,6 +2,7 @@
 const totalpais = 19107216;
 const d = 14;
 const bus = new Vue();
+const formato = {year: 'numeric', month: 'long', day: 'numeric'};
 
 var svgWidth = 600;
 var svgHeight = 480;
@@ -79,7 +80,7 @@ function draw(data, columna) {
 		.attr("cy", function(d) { return y(d[columna]); })
 		.on("mouseover", function(c) {
 			tooltip.style("opacity", 1)
-				.html(c[columna] + " " + columna + " al día " + c.fecha.toLocaleDateString());
+				.html(c[columna] + " " + columna + " al día " + c.fecha.toLocaleDateString('es-CL', formato));
 			svg.select('[cx="'+ x(c.fecha) + '"]')
 				.style("fill", "red");
 		})
@@ -109,7 +110,7 @@ function draw(data, columna) {
 		.attr("cy", function(d) { return y(d[columna]); })
 		.on("mouseover", function(c) {
 			tooltip.style("opacity", 1)
-				.html(c[columna] + " " + columna + " al día " + c.fecha.toLocaleDateString());
+				.html(c[columna] + " " + columna + " al día " + c.fecha.toLocaleDateString('es-CL', formato));
 			svg.select('[cy="'+ y(c[columna]) + '"]')
 				.style("fill", "red");
 		})
@@ -161,7 +162,6 @@ var app = new Vue({
 			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
 
 			//Fechas
-			const formato = {year: 'numeric', month: 'long', day: 'numeric'};
 			este.sendData(da[da.length - 1].fecha.toLocaleDateString('es-CL', formato));
 			este.fecha_pronostico = lvirtual[lvirtual.length - 1].fecha.toLocaleDateString('es-CL', formato);
 			
