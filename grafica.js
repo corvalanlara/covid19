@@ -142,18 +142,35 @@ var app = new Vue({
 	},
 	created() {
 		let este = this;
-		var csv = d3.csv("datos.csv" , 
-			function(d) {
-				return { 
-					fecha: d3.timeParse("%Y-%m-%d")(d.fecha), 
-					contagiados: Number(d.contagiados_a),
-					indice: Number(d.indice),
-					retirados: Number(d.retirados_a),
-					infectados: Number(d.infectados_v),
-				};
-			}
-		);
+		var csv = d3.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto5/TotalesNacionales.csv").then(function(e) {
+			var transposed = [];
+			e.forEach(function(c) {
+				transposed.push(Object.values(c));
+			});
+			transposed.push(Object.keys(e[1]));
+			var keys = d3.transpose(transposed);
+			var values = keys.splice(1);
 
+			var objetos = []
+			for(var i = 0; i < values.length; i++) {
+				var o = {}
+				for(var j = 0; j < keys[0].length; j++) {
+					o[keys[0][j]] = values[i][j];
+				}
+				objetos.push(o);
+			}
+			objetos.forEach(function(e, i) {
+				e["retirados"] = Number(e["Fallecidos"]) + Number(e["Casos recuperados"]);
+				e["infectados"] = (Number(e["Casos totales"]) - Number(e["retirados"]));
+				e["indice"] = i + 1;
+				e["fecha"] = d3.timeParse("%Y-%m-%d")(e["Fecha"]);
+				e["contagiados"] = Number(e["Casos totales"]);
+
+			
+			});
+			return objetos;
+		});
+		
 		csv.then(function(da) {
 			//Método SRI
 			var lvirtual = add_virtual_dates(da, 30, false);
