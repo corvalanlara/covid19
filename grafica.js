@@ -20,14 +20,13 @@ var svg = d3.select("#dataviz")
 
 function draw(data, columna) {
 	var x = d3.scaleTime()
-		.domain(d3.extent(data[0], function(d) { return d.fecha; }))
+		.domain(d3.extent(data, function(d) { return d.fecha; }))
 		.range([0, width]);
 	
-	var max_y1 = d3.max(data[0], function(d) { return d[columna]; });
-	var max_y2 = d3.max(data[1], function(d) { return d[columna]; });
+	var max_y1 = d3.max(data, function(d) { return d[columna]; });
 
 	var y = d3.scaleLinear()
-		.domain([0, max_y1 > max_y2 ? max_y1 : max_y2])
+		.domain([0, max_y1])
 		.range([height, 0]);
 
 	var line = d3.line()
@@ -73,7 +72,7 @@ function draw(data, columna) {
 
 	//DATOS SIN CUARENTENA
 	svg.selectAll("dot")
-		.data(data[0])
+		.data(data)
 		.enter().append("circle")
 		.attr("r", 5)
 		.attr("cx", function(d) { return x(d.fecha); })
@@ -93,7 +92,7 @@ function draw(data, columna) {
 		});
 
 	svg.append("path")
-		.datum(data[0])
+		.datum(data)
 		.attr("fill", "none")
 		.attr("stroke", "steelblue")
 		.attr("stroke-linejoin", "round")
@@ -101,43 +100,12 @@ function draw(data, columna) {
 		.attr("stroke-width", 1.5)
 		.attr("d", line);
 
-	// DATOS CUARENTENA
-	svg.selectAll("dot")
-		.data(data[1])
-		.enter().append("circle")
-		.attr("r", 5)
-		.attr("cx", function(d) { return x(d.fecha); })
-		.attr("cy", function(d) { return y(d[columna]); })
-		.on("mouseover", function(c) {
-			tooltip.style("opacity", 1)
-				.html(c[columna] + " " + columna + " al día " + c.fecha.toLocaleDateString('es-CL', formato));
-			svg.select('[cy="'+ y(c[columna]) + '"]')
-				.style("fill", "red");
-		})
-		.on("mouseout", function(c) {
-			tooltip.transition()
-				.duration(200)
-				.style("opacity", 0);
-			svg.select('[cy="'+ y(c[columna]) + '"]')
-				.style("fill", "black");
-		});
-
-	svg.append("path")
-		.datum(data[1])
-		.attr("fill", "none")
-		.attr("stroke", "red")
-		.attr("stroke-linejoin", "round")
-		.attr("stroke-linecap", "round")
-		.attr("stroke-width", 1.5)
-		.attr("d", line2);
-
 }
 
 var app = new Vue({
 	el: '#pro',
 	data: {
 		sri_treinta: 0,
-		sri_cuarentena: 0,
 		fecha_pronostico: "",
 	},
 	created() {
@@ -175,15 +143,13 @@ var app = new Vue({
 			//Método SRI
 			var lvirtual = add_virtual_dates(da, 30, false);
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados; 
-			var vcuarentena = add_virtual_dates(da, 30, true);
-			este.sri_cuarentena = vcuarentena[vcuarentena.length - 1].contagiados;
 
 			//Fechas
 			este.sendData(da[da.length - 1].fecha.toLocaleDateString('es-CL', formato));
 			este.fecha_pronostico = lvirtual[lvirtual.length - 1].fecha.toLocaleDateString('es-CL', formato);
 			
 			//Gráfico
-			draw([lvirtual, vcuarentena], "contagiados");
+			draw(lvirtual, "contagiados");
 		});
 	},
 	methods: {
