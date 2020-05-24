@@ -1,15 +1,14 @@
-
 const totalpais = 19107216;
 const d = 14;
-const bus = new Vue();
 const formato = {year: 'numeric', month: 'long', day: 'numeric'};
 
-var svgWidth = 600;
-var svgHeight = 480;
-var margin = {top: 20, right: 20, bottom: 30, left: 50};
-var width = svgWidth - margin.left - margin.right;
-var height = svgHeight - margin.top - margin.bottom;
-var svg = d3.select("#dataviz")
+function draw(data, columna) {
+	var svgWidth = 600;
+	var svgHeight = 480;
+	var margin = {top: 20, right: 20, bottom: 30, left: 50};
+	var width = svgWidth - margin.left - margin.right;
+	var height = svgHeight - margin.top - margin.bottom;
+	var svg = d3.select("#dataviz")
 		.append("svg")
   		.attr("preserveAspectRatio", "xMinYMin meet")
   		.attr("viewBox", "0 0 600 480")
@@ -18,7 +17,6 @@ var svg = d3.select("#dataviz")
 			"translate(" + margin.left + "," + margin.top + ")" );
 
 
-function draw(data, columna) {
 	var x = d3.scaleTime()
 		.domain(d3.extent(data, function(d) { return d.fecha; }))
 		.range([0, width]);
@@ -107,6 +105,9 @@ var app = new Vue({
 	data: {
 		sri_treinta: 0,
 		fecha_pronostico: "",
+		total_hoy: 0,
+		fecha_hoy: "",
+		fecha_pronostico: "",
 	},
 	created() {
 		let este = this;
@@ -140,33 +141,23 @@ var app = new Vue({
 		});
 		
 		csv.then(function(da) {
+			//Último dato
+			var ultimo = da[da.length - 1];
+			este.fecha_hoy = ultimo.fecha.toLocaleDateString('es-CL', formato);
+			este.total_hoy = ultimo.contagiados;
+
 			//Método SRI
 			var lvirtual = add_virtual_dates(da, 30, false);
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados; 
 
 			//Fechas
-			este.sendData(da[da.length - 1].fecha.toLocaleDateString('es-CL', formato));
+			este.fecha_pronostico = da[da.length - 1].fecha.toLocaleDateString('es-CL', formato);
 			este.fecha_pronostico = lvirtual[lvirtual.length - 1].fecha.toLocaleDateString('es-CL', formato);
 			
 			//Gráfico
 			draw(lvirtual, "contagiados");
 		});
 	},
-	methods: {
-    		sendData(fecha){
-      			bus.$emit('fecha', fecha)
-    		}
-	}
-});
-
-var pri = new Vue({
-	el: "#pri",
-	data: {
-		fecha_pronostico: "",
-	},
-	mounted() {
-    		bus.$on("fecha", fecha => this.fecha_pronostico = fecha);
-  	}
 });
 
 // METODO DE MÍNIMOS CUADRADOS

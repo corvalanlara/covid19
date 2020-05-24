@@ -22,13 +22,26 @@
 	<div class="section">
 		<div class="container">
 			<h1 class="title has-text-centered">Pronóstico COVID19 Chile</h1>
-			<div class="tile is-ancestor is-vertical">
+			<div class="tile is-ancestor is-vertical" id="pro">
 				<div class="tile is-parent">
-					<div class="tile is-child  box">
-						<div class="level" id="pro">
+					<div class="tile is-child box">
+						<div class="level">
 							<div class="level-item has-text-centered">
 								<div>
-									<p class="heading">Total de contagiados al día {{ fecha_pronostico }}</p>
+									<p class="heading">Total de contagiados al día {{ fecha_hoy }}</p>
+								</div>
+							</div>
+							
+							<div class="level-item has-text-centered">
+								<div>
+									<p class="title">{{ total_hoy }}</p>
+								</div>
+							</div>
+						</div>
+						<div class="level">
+							<div class="level-item has-text-centered">
+								<div>
+									<p class="heading">Proyección de contagiados al día {{ fecha_pronostico }}</p>
 								</div>
 							</div>
 							
@@ -38,6 +51,7 @@
 								</div>
 							</div>
 						</div>
+
 					</div>
 				</div>
 				<div class="tile is-parent">
@@ -46,7 +60,7 @@
 					</div>
 					<div class="tile is-parent is-vertical">
 						<div class="tile is-child box">
-							<article id="pri">
+							<article>
 								<p class="content">El modelo se alimenta de los datos oficiales entregados al día {{ fecha_pronostico }}. Para el pronóstico se utiliza una población total de 19.107.216, según proyección del INE al 30 de junio de 2019, y para obtener el número promedio de contactos infecciosos (o número k) se calcula a partir de los datos de los últimos 7 días.</p>
 							</article>
 						</div>
