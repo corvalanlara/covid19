@@ -107,7 +107,6 @@ var app = new Vue({
 		fecha_pronostico: "",
 		total_hoy: 0,
 		fecha_hoy: "",
-		fecha_pronostico: "",
 	},
 	created() {
 		let este = this;
@@ -151,7 +150,6 @@ var app = new Vue({
 			este.sri_treinta = lvirtual[lvirtual.length - 1].contagiados; 
 
 			//Fechas
-			este.fecha_pronostico = da[da.length - 1].fecha.toLocaleDateString('es-CL', formato);
 			este.fecha_pronostico = lvirtual[lvirtual.length - 1].fecha.toLocaleDateString('es-CL', formato);
 			
 			//Gráfico
